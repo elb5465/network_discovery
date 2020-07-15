@@ -56,7 +56,6 @@ def get_ipHost_info():
 #------------------------------------------------------------------------------------------------------------------
 
 
-
 #From testing on Mac, cmd line response is decoded already, but Windows still needs to be decoded.
 cmd_response = send_to_cmdLine("arp -a")
 if get_OS()=="Windows":
@@ -75,8 +74,6 @@ while len(parsed_list) > cnt+1:
         print(parsed_list[cnt])
         parsed_list.remove(parsed_list[cnt])
     cnt += 1
-
-# print(parsed_list)
 
 # Key:    the vendor name of the MAC address.
 # Value:  a list of devices from that vendor.
@@ -106,23 +103,16 @@ for i in parsed_list:
             #lookup MAC addr vendor name.
             #add device info to device dictionary
             #add device dicts to network dict with vendor name
-        else:
-            with open('network_scan_results.JSON') as json_file:
-                data = json.load(json_file)
-                # print(data)
+        else: 
+            name = socket.getfqdn(ip_mac_type[0])
+            mac_name = MacLookup().lookup(ip_mac_type[1])
+            device_dict[name] = ip_mac_type
 
-            if ip_mac_type[0] in str(data):
-                pass
+            
+            if mac_name in network_dict:
+                network_dict[mac_name].update({name: device_dict[name]})
             else:
-                name = socket.getfqdn(ip_mac_type[0])
-                mac_name = MacLookup().lookup(ip_mac_type[1])
-                device_dict[name] = ip_mac_type
-
-                
-                if mac_name in network_dict:
-                    network_dict[mac_name].update({name: device_dict[name]})
-                else:
-                    network_dict[mac_name] = device_dict
+                network_dict[mac_name] = device_dict
                 
                 #reset device dict so it doesn't keep growing
             device_dict = {}
@@ -136,11 +126,11 @@ print("\nSTATIC LIST ADDRESSES: ")
 print(static_addrs)
 
 formatted_json_network_results = json.dumps(network_dict, indent = 8, sort_keys=True)
+print("\nOUTPUT THAT WAS SENT TO JSON FILE")
 print(formatted_json_network_results)
 
 network_scan_results = open("network_scan_results.json", "w+")
-if formatted_json_network_results != {}:
-    network_scan_results.write(formatted_json_network_results)
+network_scan_results.write(formatted_json_network_results)
 network_scan_results.close()
 
 
