@@ -1,0 +1,23 @@
+##### get tools to compile it with
+python3 -m pip install --user --upgrade setuptools wheelpython3 -m pip install --user --upgrade setuptools wheel
+
+##### compile it i think with this
+python setup.py sdist bdist_wheel
+
+##### get latest version of twine (tool to upload to test.pypi.org)
+python3 -m pip install --user --upgrade twine
+
+##### do the actual upload (first-time)
+python3 -m twine upload --repository testpypi dist/*
+
+##### do the uploads afterwards to update it (change version in setup.py)
+##### run the 'python setup.py sdist bdist_wheel' command again
+#####then do...
+python3 -m twine upload --repository testpypi dist/* --skip-existing
+
+##### to download the most recent version, use:
+pip install -i https://test.pypi.org/simple/ network-discovery==<INSERT_VERSION>
+
+##### so if I want to download the fourth version, i would use:
+pip install -i https://test.pypi.org/simple/ network-discovery==0.0.4
+
