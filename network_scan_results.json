@@ -6,10 +6,6 @@
                 ]
         },
         "Apple, Inc.": {
-                "Erics-MBP.fios-router.home": [
-                        "192.168.1.240",
-                        "3c-22-fb-7f-05-fc"
-                ],
                 "Erics-iPad.fios-router.home": [
                         "192.168.1.202",
                         "cc-25-ef-be-da-8d"
@@ -23,10 +19,10 @@
                         "dc-a9-04-6b-83-2d"
                 ]
         },
-        "Samsung Electronics Co.,Ltd": {
-                "localhost.fios-router.home": [
-                        "192.168.1.245",
-                        "24-fc-e5-71-d7-db"
+        "Intel Corporate": {
+                "md2r0e4c.fios-router.home": [
+                        "192.168.1.242",
+                        "c8-21-58-35-1c-d6"
                 ]
         },
         "Texas Instruments": {

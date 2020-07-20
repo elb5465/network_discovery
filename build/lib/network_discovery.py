@@ -215,6 +215,7 @@ def main():
             nw.device_dict={}
     
     nw.dict_to_JSON()
+    return nw.network_dict
     
 
 

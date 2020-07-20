@@ -10,14 +10,15 @@ python3 -m pip install --user --upgrade twine
 ##### do the actual upload (first-time)
 python3 -m twine upload --repository testpypi dist/*
 
-##### do the uploads afterwards to update it (change version in setup.py)
-##### run the 'python setup.py sdist bdist_wheel' command again
-#####then do...
+##### To do the uploads after the initial to update it: 
+- ( change version to whatever the newest update will be in setup.py )
+- ( run the 'python setup.py sdist bdist_wheel' command again
+##### then do...
 python3 -m twine upload --repository testpypi dist/* --skip-existing
 
 ##### to download the most recent version, use:
 pip install -i https://test.pypi.org/simple/ network-discovery==<INSERT_VERSION>
 
 ##### so if I want to download the fourth version, i would use:
-pip install -i https://test.pypi.org/simple/ network-discovery==0.0.4
+pip install -i https://test.pypi.org/simple/ network-discovery==0.0.8
 

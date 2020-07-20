@@ -7,13 +7,14 @@ import json
 from mac_vendor_lookup import MacLookup
 
 includeJSON = True
+help_info = False
 
 class Network_Discovery:
     """
-    This class will allow the user to find devices on its network, collect their
-    IP/MAC addresses. Additionally, it will use those to get the FQDN and Vendor Name of each device so 
+    This class will allow the user to find devices on the current network and collect their
+    IP/MAC addresses. Additionally, it will use those addresses to get the FQDN and Vendor Name of each device so 
     that it can organize and store the information in a JSON file, as well as displaying the contents of
-    the JSON in the command line.
+    the JSON in the console.
 
     """
     def __init__(self):
@@ -32,7 +33,7 @@ class Network_Discovery:
     #-----------------------------------------------------------------------------------------------------------
     @staticmethod
     def get_OS():
-        """Get the Operating System that this tool is being run on"""
+        """Get the Operating System that this tool is being run with."""
         os_name = os.name
         if (os_name == "nt"):
             print("Windows OS Detected.\nThis may take up to a minute depending on connection-quality.")
@@ -44,14 +45,17 @@ class Network_Discovery:
             print("{} is unrecognized".format(os.name))
             return "Other"
 
-
     #-----------------------------------------------------------------------------------------------------------
     def send_to_cmdLine(self, cmd):
-        """Function to send a command string 'cmd' to the terminal and return its filtered output accordingly for the OS."""
+        """Used to send a string 'cmd' to the terminal and return its response in utf-8 format."""
+        return subprocess.check_output((cmd), shell=True, stderr=subprocess.STDOUT).decode('utf8')
+
+    #-----------------------------------------------------------------------------------------------------------
+    def filter_response(self, cmd):
+        """Used to send a string 'cmd' to the terminal and return its filtered output accordingly for the OS."""
         self.os = self.get_OS()
 
-        cmd_response = subprocess.check_output((cmd), shell=True, stderr=subprocess.STDOUT).decode('utf8')
-       
+        cmd_response = self.send_to_cmdLine(cmd)
         #parse the list and filter out the words that are irrelevant.
         parsed_response = str(cmd_response).split()
         parsed_response = list(filter(lambda x: (x not in self.words_to_rmv) and ("0x" not in x), parsed_response))
@@ -66,7 +70,7 @@ class Network_Discovery:
     #-----------------------------------------------------------------------------------------------------------
     @staticmethod
     def get_ipHost_info():
-        """Function which is an alternative method that may be used to collect host name and ip"""
+        """This is an alternative method that may be used to collect host name and IP if needed."""
         hostname = socket.gethostname()    
         IPAddr = socket.gethostbyname(hostname)    
         print("Your Computer Name is: " + hostname)    
@@ -79,8 +83,8 @@ class Network_Discovery:
     def fix_mac_addr(mac_addr):
         """This will standardize any MAC addresses that are below the typical 12 digits.
         On Mac OS, some MAC addresses show up without the leading zero in front of some  
-        sections. MacLookup only works if that style is followed, so this adds those leading
-        zeroes that are sometimes left out.
+        sections. MacLookup only works if that 12-digit style is followed, so this adds those leading
+        zeroes before performing MacLookup.
         """
         new = list(filter(lambda x: (x!=":") and (x!="-"), mac_addr))
         temp_str = ""
@@ -105,7 +109,7 @@ class Network_Discovery:
     #-----------------------------------------------------------------------------------------------------------
     @staticmethod
     def remove_win_heading(parsed_list):
-        """Removes the additional IP heading from Windows command response that we don't use"""
+        """Removes the additional IP heading from Windows command response that are not used."""
         cnt = 0
         while len(parsed_list) > cnt+1:
             #get rid of heading IP.
@@ -116,7 +120,7 @@ class Network_Discovery:
 
     #-----------------------------------------------------------------------------------------------------------
     def store_device_info(self, device_info):
-        """Gather and store the FQDN and Vendor name to make a dictionary for each device containting that information"""
+        """Gather and store the FQDN and vendor-name to make a dictionary for each device containing that information."""
         if (self.os=="Windows" and device_info[-1] == "static"):
             self.static_addrs.append(device_info)
 
@@ -155,21 +159,21 @@ class Network_Discovery:
     def store_network_devices(self, name, mac_name, device_info, device_dict):
         """mac_vendor_lookup does not seem to work with any devices that were listed as static on Windows,
         so for Windows it will skip them, but for Linux it will still add them."""
-         #windows cant seem to handle static, but mac_vendor_lookup for linux seems to find the vendor name fine.    
         if (device_info[-1]!="static"):
             if mac_name not in self.network_dict:
                 self.network_dict[mac_name] = device_dict
             else:
                 self.network_dict[mac_name].update({name: device_dict[name]})
-                        # removing the type in windows to normalize the list across OS's
+
+            # removing the type in windows to normalize the list as [IP_address, MAC_address] across OS's
             if (self.os=="Windows"):
                 self.device_info.remove(device_info[2])
 
 
     #-----------------------------------------------------------------------------------------------------------
     def dict_to_JSON(self):
-        """Takes a dict, sorts and formats it like a JSON, then it prints it out in the console and sends the same
-        result to a new JSON file in the directory that this tool is run"""
+        """Takes a dict, sorts it and formats it like a JSON. Then, it prints it out in the console and sends the same
+        result to a new JSON file in the directory that this tool is run, unless --noJSON is specified as an argument."""
         print("-------------------------------------------------------------------------")
         print("\nOutput that was sent to JSON file, \'network_scan_results.json\': ")
         print("-------------------------------------------------------------------------")
@@ -191,12 +195,16 @@ class Network_Discovery:
 #-----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------
 def main():
-    """ Sends the 'arp -a' command, then saves/outputs the device info on the network to an organized JSON"""
+    """Sends the 'arp -a' command, then saves/outputs the device info on the network to the console and to a JSON, unless --noJSON is specified."""
+    if help_info:
+        help(Network_Discovery)
+        return
+
     print("-------------------------------------------------------------------------")
     nw = Network_Discovery() 
 
     #send arp command and save the decoded response.
-    parsed_response = nw.send_to_cmdLine("arp -a")
+    parsed_response = nw.filter_response("arp -a")
 
     nw.idx = 1
     #iterate through the list of name/ip/mac's and organize them into a nested dict.
@@ -224,4 +232,3 @@ def main():
 #-----------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
-    # help(Network_Discovery)
