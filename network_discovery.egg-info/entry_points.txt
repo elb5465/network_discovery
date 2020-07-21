@@ -1,0 +1,4 @@
+
+        [console_scripts]
+        network_discovery = cli:main
+        
