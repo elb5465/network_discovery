@@ -4,7 +4,7 @@ from setuptools import setup
 #name is arbitrary: can be anything - just whatever you want to type to call the function from cmd line.
 setup(
     name='network_discovery',
-    version='0.0.8',
+    version='0.0.9',
     url='http://github.com/elb5465/network_discovery',
     license='MIT',
     author='Eric Baker',
