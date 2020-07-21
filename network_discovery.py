@@ -8,6 +8,7 @@ from mac_vendor_lookup import MacLookup
 
 includeJSON = True
 help_info = False
+use_cli = False
 
 class Network_Discovery:
     """
@@ -18,7 +19,7 @@ class Network_Discovery:
 
     """
     def __init__(self):
-        #this is a list of words to remove that show up after parsing on Mac and Windows.
+        # this is a list of words to remove that show up after parsing on Mac and Windows.
         self.words_to_rmv = ["Interface:", "Internet", "Address", "---", "Physical", "Type", "at", "on", "en0", "ifscope", "[ethernet]", "permanent"]
         self.network_dict = {}
         self.os = ""
@@ -29,6 +30,20 @@ class Network_Discovery:
         self.mac_name = ""
         self.idx = 0
 
+
+    #-----------------------------------------------------------------------------------------------------------
+    def check_requirements(self, req):
+        """ Check if the package requirements are met before executing. """
+        cmd_response = ""
+        try:
+            cmd_response = send_cmd("pip show {}".format(req))
+            return True
+        except:
+            print(cmd_response)
+            print("Missing required package:")
+            print("\t- Make sure \'{}\' is properly installed with pip.".format(req))
+            print("\t- Check that your pip installation matches the python installation.")
+            return False
 
     #-----------------------------------------------------------------------------------------------------------
     @staticmethod
@@ -56,11 +71,11 @@ class Network_Discovery:
         self.os = self.get_OS()
 
         cmd_response = self.send_to_cmdLine(cmd)
-        #parse the list and filter out the words that are irrelevant.
+        # parse the list and filter out the words that are irrelevant.
         parsed_response = str(cmd_response).split()
         parsed_response = list(filter(lambda x: (x not in self.words_to_rmv) and ("0x" not in x), parsed_response))
 
-        #Windows has extra unnecessary heading IP, so remove that if on Windows OS.
+        # Windows has extra unnecessary heading IP, so remove that if on Windows OS.
         if self.os=="Windows":
             parsed_response = self.remove_win_heading(parsed_response)
 
@@ -112,7 +127,7 @@ class Network_Discovery:
         """Removes the additional IP heading from Windows command response that are not used."""
         cnt = 0
         while len(parsed_list) > cnt+1:
-            #get rid of heading IP.
+            # get rid of heading IP.
             if (parsed_list[cnt+1]) and ("." in (parsed_list[cnt] and parsed_list[cnt+1])) and (not parsed_list[cnt].isalpha()):
                 parsed_list.remove(parsed_list[cnt])
             cnt += 1
@@ -139,7 +154,6 @@ class Network_Discovery:
 
 
         if (self.name == ip):
-        # if (self.os!="Windows" and self.name == ip):
             self.name = "Unknown_" + str(self.idx)
             self.idx+=1
         else:
@@ -195,30 +209,49 @@ class Network_Discovery:
 #-----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------
 def main():
-    """Sends the 'arp -a' command, then saves/outputs the device info on the network to the console and to a JSON, unless --noJSON is specified."""
-    if help_info:
-        help(Network_Discovery)
-        return
-
-    print("-------------------------------------------------------------------------")
     nw = Network_Discovery() 
 
-    #send arp command and save the decoded response.
+    if use_cli==False:
+
+        #---------------- CHECK ARGUMENTS ----------------------
+        args_list = sys.argv
+        # print(args_list)
+
+        help = ["help", "-help", "--help"]
+        if args_list[-1] in help:
+            print("To use find devices on your network, just type \'network_discovery\' by itself or with these parameters: ")
+            print("\t--info \n\t\t~ Displays the package information that is given by \'pip show network_discovery\'")
+            print("\t--noJSON \n\t\t~ A JSON file is saved by default. Using this argument displays the output in the console without saving it to a JSON file.")
+            print("\t--help \n\t\t~ Brings you to this page.\n")
+            # help_info = True 
+            return "--help"
+
+        if ("--noJSON" in args_list):
+            includeJSON = False 
+
+        if ("--info" in args_list):
+            print(nw.send_to_cmdLine("pip show network_discovery"))
+            return
+
+
+    print("-------------------------------------------------------------------------")
+
+    # send arp command and save the decoded response.
     parsed_response = nw.filter_response("arp -a")
 
     nw.idx = 1
-    #iterate through the list of name/ip/mac's and organize them into a nested dict.
+    # iterate through the list of name/ip/mac's and organize them into a nested dict.
     for i in parsed_response:
 
         nw.device_info.append(i) 
         
-        #if list is full for the trio, then populate the dictionary and restart the process with the next set.
+        # if list is full for the trio, then populate the dictionary and restart the process with the next set.
         if len(nw.device_info)%3==0:
             
             nw.store_device_info(nw.device_info)
             nw.store_network_devices(nw.name, nw.mac_name, nw.device_info, nw.device_dict)
 
-            #reset the device info and dict for each device to keep them as separate entries in the network_dict.
+            # reset the device info and dict for each device to keep them as separate entries in the network_dict.
             nw.device_info=[]
             nw.device_dict={}
     
@@ -231,4 +264,8 @@ def main():
 #-----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    main()
+    resp = main()
+    if resp=="--help":
+        help(Network_Discovery)
+
+

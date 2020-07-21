@@ -1,7 +1,7 @@
 ##### get tools to compile it with
-python3 -m pip install --user --upgrade setuptools wheelpython3 -m pip install --user --upgrade setuptools wheel
+python3 -m pip install --user --upgrade setuptools wheel 
 
-##### compile it i think with this
+##### recompile the setup
 python setup.py sdist bdist_wheel
 
 ##### get latest version of twine (tool to upload to test.pypi.org)
@@ -9,6 +9,7 @@ python3 -m pip install --user --upgrade twine
 
 ##### do the actual upload (first-time)
 python3 -m twine upload --repository testpypi dist/*
+##### It will ask for a password. 
 
 ##### To do the uploads after the initial to update it: 
 - ( change version to whatever the newest update will be in setup.py )

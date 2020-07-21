@@ -1,5 +1,5 @@
 from __future__ import print_function
-from docopt import docopt
+# from docopt import docopt
 import network_discovery
 import subprocess
 import sys
@@ -20,13 +20,13 @@ def check_requirements(req):
 
 
 def main():
+    network_discovery.use_cli = True
     #---------------- CHECK PACKAGE REQUIREMENTS ----------------------
-    if check_requirements("mac_vendor_lookup") and check_requirements("docopt"):
-
+    if check_requirements("mac_vendor_lookup"): #and check_requirements("docopt"):
 
         #---------------- CHECK ARGUMENTS ----------------------
         args_list = sys.argv
-        print(args_list)
+        # print(args_list)
 
         help = ["help", "-help", "--help"]
         if args_list[-1] in help:
@@ -34,7 +34,8 @@ def main():
             print("\t--info \n\t\t~ Displays the package information that is given by \'pip show network_discovery\'")
             print("\t--noJSON \n\t\t~ A JSON file is saved by default. Using this argument displays the output in the console without saving it to a JSON file.")
             print("\t--help \n\t\t~ Brings you to this page.\n")
-            network_discovery.help_info = True 
+            # network_discovery.help_info = True 
+            return
 
         if ("--noJSON" in args_list):
             network_discovery.includeJSON = False 
@@ -44,7 +45,7 @@ def main():
             return
 
         
-        #---------------- RUN THE ACTUAL TOOL ----------------------
+        #---------------- RUN THE ACTUAL SCRIPT ----------------------
         network_discovery.main()
     
     else:
