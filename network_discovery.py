@@ -20,7 +20,7 @@ class Network_Discovery:
     """
     def __init__(self):
         # this is a list of words to remove that show up after parsing on Mac and Windows.
-        self.words_to_rmv = ["Interface:", "Internet", "Address", "---", "Physical", "Type", "at", "on", "en0", "ifscope", "[ethernet]", "permanent"]
+        self.words_to_rmv = ["Interface:", "Internet", "Address", "---", "Physical", "Type", "at", "on", "en0", "eth0", "eth1", "eth2", "eth3", "ifscope", "[ethernet]", "[ether]", "permanent", "ens3", "en1", "en2", "ens0", "ens1", "ens2"]
         self.network_dict = {}
         self.os = ""
         self.device_dict = {}
